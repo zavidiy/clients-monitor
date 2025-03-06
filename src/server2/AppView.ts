@@ -1,25 +1,17 @@
 import {Server} from 'socket.io';
 import {ClientRole, SensorData, TemperatureAlertData} from './types';
+import {AppController} from './AppController';
+import {AppModel} from './AppModel';
+import {reaction} from 'mobx';
 
 export class AppView {
-    private handleSensorReport?: ((data: SensorData) => void);
-
-    constructor(readonly io: Server) {
+    constructor(readonly io: Server, readonly model: AppModel, readonly controller: AppController) {
+        this.initModelHandlers();
         this.initUserInteraction();
-    }
-
-    initHandlers(
-        handleSensorReport?: ((data: SensorData) => void),
-    ): void {
-        this.handleSensorReport = handleSensorReport;
     }
 
     requestSensorsData(): void {
         this.io.to(ClientRole.SENSOR).emit('requestData');
-    }
-
-    broadcastTemperatureExceed(data: TemperatureAlertData): void {
-        this.io.to(ClientRole.MONITOR).emit('temperatureAlert', data);
     }
 
     private initUserInteraction() {
@@ -43,11 +35,26 @@ export class AppView {
             switch (role) {
                 case ClientRole.SENSOR:
                     socket.on('report', async (data: SensorData) => {
-                        this.handleSensorReport?.(data);
+                        this.controller.reportSensorData(data);
                     });
 
                     break;
             }
         });
+    }
+
+    private initModelHandlers() {
+        reaction(() => this.model.temperatureAlert,
+            (data) => {
+                console.log('reaction', data);
+
+                if (data) {
+                    this.broadcastTemperatureExceed(data);
+                }
+            })
+    }
+
+    private broadcastTemperatureExceed(data: TemperatureAlertData): void {
+        this.io.to(ClientRole.MONITOR).emit('temperatureAlert', data);
     }
 }
