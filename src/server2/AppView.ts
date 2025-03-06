@@ -10,10 +10,6 @@ export class AppView {
         this.initUserInteraction();
     }
 
-    requestSensorsData(): void {
-        this.io.to(ClientRole.SENSOR).emit('requestData');
-    }
-
     private initUserInteraction() {
         this.io.use((socket, next) => {
             const role = socket.handshake.auth.role;
@@ -44,17 +40,29 @@ export class AppView {
     }
 
     private initModelHandlers() {
-        reaction(() => this.model.temperatureAlert,
-            (data) => {
-                console.log('reaction', data);
-
-                if (data) {
-                    this.broadcastTemperatureExceed(data);
-                }
-            })
+        reaction(() => this.model.temperatureAlert, this.handleTemperatureAlert.bind(this));
+        reaction(() => this.model.sensorsDataRequestBroadcast, this.handleSensorsDaraRequestBroadcast.bind(this))
     }
 
-    private broadcastTemperatureExceed(data: TemperatureAlertData): void {
+    private handleTemperatureAlert(data?: TemperatureAlertData) {
+        if (!data) {
+            return;
+        }
+
+        console.log('broadcastTemperatureExceed', data);
+
         this.io.to(ClientRole.MONITOR).emit('temperatureAlert', data);
+    }
+
+    private handleSensorsDaraRequestBroadcast(broadcast: boolean) {
+        if (!broadcast) {
+            return;
+        }
+
+        console.log('Request sensors data');
+
+        this.io.to(ClientRole.SENSOR).emit('requestData');
+
+        this.controller.finishSensorsDataRequestBroadcast();
     }
 }

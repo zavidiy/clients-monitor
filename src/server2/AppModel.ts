@@ -6,6 +6,7 @@ export class AppModel {
     readonly requestSensorsInterval: number
 
     temperatureAlert?: TemperatureAlertData;
+    sensorsDataRequestBroadcast: boolean = false
 
     constructor(config: {
         temperatureThreshold: number
@@ -24,5 +25,13 @@ export class AppModel {
             threshold: this.temperatureThreshold,
             sensorData: data
         }
+    }
+
+    broadcastSensorsDataRequest() {
+        this.sensorsDataRequestBroadcast = true;
+    }
+
+    finishSensorsDataRequestBroadcast() {
+        this.sensorsDataRequestBroadcast = false;
     }
 }

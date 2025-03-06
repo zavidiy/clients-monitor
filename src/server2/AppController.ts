@@ -14,9 +14,13 @@ export class AppController {
         }
     }
 
+    finishSensorsDataRequestBroadcast() {
+        this.model.finishSensorsDataRequestBroadcast();
+    }
+
     private startRequestSensorsCycle() {
         setInterval(() => {
-            this.view.requestSensorsData();
+            this.model.broadcastSensorsDataRequest();
         }, this.model.requestSensorsInterval);
     }
 }

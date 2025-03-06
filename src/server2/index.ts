@@ -16,14 +16,17 @@ if (!port) {
 }
 
 const server = http.createServer();
+
 const io = new Server(server);
 
 const model = new AppModel({
     requestSensorsInterval: 5000,
     temperatureThreshold: 28
 });
-const view = new AppView(io);
-const presenter = new AppController(model, view);
+
+const controller = new AppController(model);
+
+const view = new AppView(io, model, controller);
 
 
 server.listen(port, () => {
