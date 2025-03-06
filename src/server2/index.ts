@@ -20,7 +20,7 @@ const server = http.createServer();
 const io = new Server(server);
 
 const model = new AppModel({
-    requestSensorsInterval: 5000,
+    requestSensorsInterval: 1000,
     temperatureThreshold: 28
 });
 

@@ -1,12 +1,30 @@
 import {makeAutoObservable} from 'mobx';
 import {SensorData, TemperatureAlertData} from './types';
 
-export class AppModel {
+export interface IAppModelPresenter {
+    get temperatureThreshold(): number;
+
+    get requestSensorsInterval(): number;
+
+    get lastTemperatureAlert(): TemperatureAlertData | undefined;
+
+    get isTimeToRequestSensorsData(): boolean;
+}
+
+export interface IAppModel extends IAppModelPresenter {
+    setTemperatureAlert(data: SensorData): void;
+
+    setTimeToRequestSensorsData(): void;
+
+    resetSensorsDataRequestMark(): void;
+}
+
+export class AppModel implements IAppModel {
     readonly temperatureThreshold: number
     readonly requestSensorsInterval: number
 
-    temperatureAlert?: TemperatureAlertData;
-    sensorsDataRequestBroadcast: boolean = false
+    private _lastTemperatureAlert?: TemperatureAlertData;
+    private _isTimeToRequestSensorsData: boolean = false
 
     constructor(config: {
         temperatureThreshold: number
@@ -20,18 +38,26 @@ export class AppModel {
         makeAutoObservable(this);
     }
 
+    get isTimeToRequestSensorsData(): boolean {
+        return this._isTimeToRequestSensorsData;
+    }
+
+    get lastTemperatureAlert(): TemperatureAlertData | undefined {
+        return this._lastTemperatureAlert;
+    }
+
     setTemperatureAlert(data: SensorData) {
-        this.temperatureAlert = {
+        this._lastTemperatureAlert = {
             threshold: this.temperatureThreshold,
             sensorData: data
         }
     }
 
-    broadcastSensorsDataRequest() {
-        this.sensorsDataRequestBroadcast = true;
+    setTimeToRequestSensorsData() {
+        this._isTimeToRequestSensorsData = true;
     }
 
-    finishSensorsDataRequestBroadcast() {
-        this.sensorsDataRequestBroadcast = false;
+    resetSensorsDataRequestMark() {
+        this._isTimeToRequestSensorsData = false;
     }
 }

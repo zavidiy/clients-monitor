@@ -1,11 +1,11 @@
 import {Server} from 'socket.io';
 import {ClientRole, SensorData, TemperatureAlertData} from './types';
 import {AppController} from './AppController';
-import {AppModel} from './AppModel';
+import {IAppModelPresenter} from './AppModel';
 import {reaction} from 'mobx';
 
 export class AppView {
-    constructor(readonly io: Server, readonly model: AppModel, readonly controller: AppController) {
+    constructor(readonly io: Server, readonly model: IAppModelPresenter, readonly controller: AppController) {
         this.initModelHandlers();
         this.initUserInteraction();
     }
@@ -31,7 +31,7 @@ export class AppView {
             switch (role) {
                 case ClientRole.SENSOR:
                     socket.on('report', async (data: SensorData) => {
-                        this.controller.reportSensorData(data);
+                        this.controller.handleSensorData(data);
                     });
 
                     break;
@@ -40,8 +40,9 @@ export class AppView {
     }
 
     private initModelHandlers() {
-        reaction(() => this.model.temperatureAlert, this.handleTemperatureAlert.bind(this));
-        reaction(() => this.model.sensorsDataRequestBroadcast, this.handleSensorsDaraRequestBroadcast.bind(this))
+        reaction(() => this.model.lastTemperatureAlert, this.handleTemperatureAlert.bind(this));
+
+        reaction(() => this.model.isTimeToRequestSensorsData, this.broadcastSensorsDaraRequest.bind(this))
     }
 
     private handleTemperatureAlert(data?: TemperatureAlertData) {
@@ -54,8 +55,8 @@ export class AppView {
         this.io.to(ClientRole.MONITOR).emit('temperatureAlert', data);
     }
 
-    private handleSensorsDaraRequestBroadcast(broadcast: boolean) {
-        if (!broadcast) {
+    private broadcastSensorsDaraRequest(isTimeToRequestSensorsData: boolean) {
+        if (!isTimeToRequestSensorsData) {
             return;
         }
 
@@ -63,6 +64,6 @@ export class AppView {
 
         this.io.to(ClientRole.SENSOR).emit('requestData');
 
-        this.controller.finishSensorsDataRequestBroadcast();
+        this.controller.finishSensorsDataRequest();
     }
 }
