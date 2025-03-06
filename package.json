@@ -1,0 +1,34 @@
+{
+  "name": "clients-monitor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev:server": "tsx src/server2/index.ts",
+    "dev:sensor": "tsx src/sensor/index.ts",
+    "dev:monitor": "tsx src/monitor/index.ts",
+    "start:db": "docker run -d --name mongodb -p 27017:27017 mongo"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mobx": "^6.13.6",
+    "mongoose": "^8.10.2",
+    "node-telegram-bot-api": "^0.66.0",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
+    "systeminformation": "^5.25.11"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.13.5",
+    "@types/node-telegram-bot-api": "^0.64.7",
+    "@types/socket.io": "^3.0.1",
+    "@types/socket.io-client": "^3.0.0",
+    "@types/systeminformation": "^3.54.1",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3"
+  },
+  "private": true
+}
