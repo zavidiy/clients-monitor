@@ -23,7 +23,7 @@ export class AppModel implements IAppModel {
     readonly temperatureThreshold: number
     readonly requestSensorsInterval: number
 
-    private _lastTemperatureAlert?: TemperatureAlertData;
+    private _lastTemperatureAlert?: TemperatureAlertData = undefined;
     private _isTimeToRequestSensorsData: boolean = false
 
     constructor(config: {

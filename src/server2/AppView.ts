@@ -2,7 +2,7 @@ import {Server} from 'socket.io';
 import {ClientRole, SensorData, TemperatureAlertData} from './types';
 import {AppController} from './AppController';
 import {IAppModelPresenter} from './AppModel';
-import {reaction} from 'mobx';
+import {reaction, toJS} from 'mobx';
 
 export class AppView {
     constructor(readonly io: Server, readonly model: IAppModelPresenter, readonly controller: AppController) {
@@ -40,9 +40,9 @@ export class AppView {
     }
 
     private initModelHandlers() {
-        reaction(() => this.model.lastTemperatureAlert, this.handleTemperatureAlert.bind(this));
-
         reaction(() => this.model.isTimeToRequestSensorsData, this.broadcastSensorsDaraRequest.bind(this))
+
+        reaction(() => this.model.lastTemperatureAlert, this.handleTemperatureAlert.bind(this));
     }
 
     private handleTemperatureAlert(data?: TemperatureAlertData) {
@@ -50,7 +50,7 @@ export class AppView {
             return;
         }
 
-        console.log('broadcastTemperatureExceed', data);
+        console.log('Temperature alert', toJS(data));
 
         this.io.to(ClientRole.MONITOR).emit('temperatureAlert', data);
     }

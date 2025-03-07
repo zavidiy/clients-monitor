@@ -10,7 +10,6 @@ export class AppController {
         let {temperatureThreshold: threshold} = this.model;
 
         if (data.temperature > threshold) {
-            console.log('Temperature exceeded threshold');
             this.model.setTemperatureAlert(data);
         }
     }

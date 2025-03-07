@@ -34,7 +34,7 @@ async function bootstrap() {
     });
 
     socket.on('temperatureAlert', ({threshold, sensorData: {hostname, temperature}}: TemperatureAlertData) => {
-        console.log(`Sensor ${hostname} exceeded maximum temperature: ${temperature} (max ${threshold}) °C`);
+        console.log(`Sensor "${hostname}" exceeded maximum temperature: ${temperature} (max ${threshold}) °C`);
     });
 
     socket.on('disconnect', () => {
