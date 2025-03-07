@@ -1,33 +1,26 @@
-import {AppModel} from './AppModel';
-import {AppView} from './AppView';
+import {IAppModel} from './AppModel';
 import {SensorData} from './types';
 
 export class AppController {
-    constructor(readonly model: AppModel, readonly view: AppView) {
-        this.setupViewHandlers();
-        this.startRequestSensorsCycle();
+    constructor(readonly model: IAppModel) {
+        this.startCycleOnRequestSensorsData();
     }
 
-    handleSensorReport(data: SensorData): void {
+    handleSensorData(data: SensorData): void {
         let {temperatureThreshold: threshold} = this.model;
 
         if (data.temperature > threshold) {
-            this.view.broadcastTemperatureExceed({
-                threshold: threshold,
-                sensorData: data,
-            });
+            this.model.setTemperatureAlert(data);
         }
     }
 
-    private setupViewHandlers() {
-        this.view.initHandlers(
-            this.handleSensorReport.bind(this),
-        );
+    finishSensorsDataRequest() {
+        this.model.resetSensorsDataRequestMark();
     }
 
-    private startRequestSensorsCycle() {
+    private startCycleOnRequestSensorsData() {
         setInterval(() => {
-            this.view.requestSensorsData();
+            this.model.setTimeToRequestSensorsData();
         }, this.model.requestSensorsInterval);
     }
 }

@@ -1,25 +1,13 @@
 import {Server} from 'socket.io';
 import {ClientRole, SensorData, TemperatureAlertData} from './types';
+import {AppController} from './AppController';
+import {IAppModelPresenter} from './AppModel';
+import {reaction, toJS} from 'mobx';
 
 export class AppView {
-    private handleSensorReport?: ((data: SensorData) => void);
-
-    constructor(readonly io: Server) {
+    constructor(readonly io: Server, readonly model: IAppModelPresenter, readonly controller: AppController) {
+        this.initModelHandlers();
         this.initUserInteraction();
-    }
-
-    initHandlers(
-        handleSensorReport?: ((data: SensorData) => void),
-    ): void {
-        this.handleSensorReport = handleSensorReport;
-    }
-
-    requestSensorsData(): void {
-        this.io.to(ClientRole.SENSOR).emit('requestData');
-    }
-
-    broadcastTemperatureExceed(data: TemperatureAlertData): void {
-        this.io.to(ClientRole.MONITOR).emit('temperatureAlert', data);
     }
 
     private initUserInteraction() {
@@ -43,11 +31,39 @@ export class AppView {
             switch (role) {
                 case ClientRole.SENSOR:
                     socket.on('report', async (data: SensorData) => {
-                        this.handleSensorReport?.(data);
+                        this.controller.handleSensorData(data);
                     });
 
                     break;
             }
         });
+    }
+
+    private initModelHandlers() {
+        reaction(() => this.model.isTimeToRequestSensorsData, this.broadcastSensorsDaraRequest.bind(this))
+
+        reaction(() => this.model.lastTemperatureAlert, this.handleTemperatureAlert.bind(this));
+    }
+
+    private handleTemperatureAlert(data?: TemperatureAlertData) {
+        if (!data) {
+            return;
+        }
+
+        console.log('Temperature alert', toJS(data));
+
+        this.io.to(ClientRole.MONITOR).emit('temperatureAlert', data);
+    }
+
+    private broadcastSensorsDaraRequest(isTimeToRequestSensorsData: boolean) {
+        if (!isTimeToRequestSensorsData) {
+            return;
+        }
+
+        console.log('Request sensors data');
+
+        this.io.to(ClientRole.SENSOR).emit('requestData');
+
+        this.controller.finishSensorsDataRequest();
     }
 }
